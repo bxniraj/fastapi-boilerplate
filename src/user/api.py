@@ -17,7 +17,6 @@ def create_user(user_request: schemas.UserCreate, db: Session = Depends(get_db))
     existing_username = db.query(models.User).filter(models.User.username == user_request.username).first()
     if existing_username:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
-    user = models.User(**user_request.model_dump())
     hashed_password = bcrypt.hashpw(user_request.password.encode(), bcrypt.gensalt())
     user = models.User(
         firstname=user_request.firstname,
@@ -50,9 +49,10 @@ def login(request: schemas.UserLogin, db: Session = Depends(get_db)):
         access_token = create_token({"sub": user.email})
         refresh_token = create_refresh_token({"sub": user.email})
 
-        return {'email': user.email,
+        return {'name': user.firstname + ' ' + user.lastname,
+                'email': user.email,
                 'access_token' : access_token,
                 'refresh_token' : refresh_token,
-                'token_type': 'Bearer' }
+                'token_type': 'Bearer'}
     else:
         raise HTTPException(status_code=401, detail="Incorrect email or password")
