@@ -1,6 +1,8 @@
 import os
+from typing import Annotated
+from fastapi import Depends
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session ,sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from dotenv import load_dotenv
 
@@ -14,10 +16,11 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base.metadata.create_all(bind=engine)
 
-def get_db():
+def _get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
  
+get_db = Annotated[Session, Depends(_get_db)]
